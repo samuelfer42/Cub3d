@@ -6,65 +6,94 @@
 /*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/08 15:14:09 by safernan          #+#    #+#             */
-/*   Updated: 2021/02/08 15:14:11 by safernan         ###   ########.fr       */
+/*   Updated: 2021/02/08 15:46:46 by safernan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/cub3d.h"
 
-int		cub3d(t_stru *stru)
+char	*map_to_str(int fd)
 {
-	init_mlx(stru);
-	if (init_textures(stru))
+	char	*map;
+	char	*tmp;
+	char	*line;
+
+	map = NULL;
+	while (get_next_line(fd, &line) > 0)
 	{
-		ft_putstr_fd("Error\nTextures can't be loaded\n", 1);
-		return (1);
+		tmp = map;
+		map = ft_strjoin(map, line);
+		free(tmp);
+		tmp = map;
+		map = ft_strjoin(map, "\n");
+		free(tmp);
+		free(line);
 	}
-	raycast(stru);
-	if (stru->save)
-	{
-		save(stru);
-		return (0);
-	}
-	mlx_put_image_to_window(stru->mlx_ptr, stru->win_ptr, stru->img_ptr, 0, 0);
-	mlx_hook(stru->win_ptr, 2, 1L << 0, key_hook, stru);
-	mlx_hook(stru->win_ptr, 17, 1L << 17, exit_hook, stru);
-	mlx_loop(stru->mlx_ptr);
-	return (0);
+	free(line);
+	return (map);
 }
 
-int		open_cub_file(char **av)
+void	end(int x, int y, t_stru *stru)
+{
+	stru->map[y] = NULL;
+	stru->map_height = y;
+	stru->map_width = x;
+}
+
+int		alloc_y(char *map, t_stru *stru)
 {
 	int i;
+	int y;
 
-	if (!av[1] || !*av[1])
+	i = 0;
+	y = 0;
+	while (map[i])
+	{
+		if (map[i] == '\n')
+			y++;
+		i++;
+	}
+	if (!(stru->map = malloc(sizeof(char *) * (y + 1))))
 		return (-1);
-	i = ft_strlen(av[1]) - 4;
-	if (ft_strncmp(av[1] + i, ".cub", 4))
-		return (-1);
-	return (open(av[1], O_RDONLY));
+	return (y);
 }
 
-int		main(int ac, char **av)
+int		alloc_x(char *map, t_stru *stru, int y)
 {
-	int		fd;
-	t_stru	*stru;
+	int i;
+	int x;
+	int	x_max;
 
-	if ((ac != 2 && ac != 3) || (!(stru = malloc_struct())))
-		return (1);
-	if (check_save(av, stru))
-		return (1);
-	if ((fd = open_cub_file(av)) == -1)
+	i = 0;
+	x = 0;
+	x_max = 0;
+	while (map[i])
 	{
-		ft_putstr_fd("Error\nCan't open the settings file\n", 1);
-		return (1);
+		if (map[i] == '\n')
+		{
+			if (x > x_max)
+				x_max = x;
+			x = 0;
+		}
+		x++;
+		i++;
 	}
-	if (parse_cub(fd, stru))
-	{
-		free_struct(stru, 0);
+	i = 0;
+	while (i < y)
+		if (!(stru->map[i++] = malloc(sizeof(char) * (x_max + 1))))
+			return (-1);
+	return (x_max);
+}
+
+int		alloc_matrix(char *map, t_stru *stru)
+{
+	int x;
+	int y;
+
+	if ((y = alloc_y(map, stru)) == -1)
 		return (1);
-	}
-	cub3d(stru);
-	free_struct(stru, 1);
+	if ((x = alloc_x(map, stru, y)) == -1)
+		return (1);
+	end(x, y, stru);
 	return (0);
 }

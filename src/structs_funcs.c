@@ -6,80 +6,84 @@
 /*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/08 15:18:22 by safernan          #+#    #+#             */
-/*   Updated: 2021/02/08 15:18:24 by safernan         ###   ########.fr       */
+/*   Updated: 2021/02/08 15:48:53 by safernan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/cub3d.h"
 
-void	put_pixel(t_stru *stru, t_color color, int x, int y)
+t_stru	create_struct(void)
 {
-	int pixel_index;
-	int rel_pixel_index;
+	t_stru to_create;
 
-	if (x < 0 || x >= stru->screen_width || y < 0 || y >= stru->screen_height)
-		return ;
-	pixel_index = x + (y * stru->screen_width);
-	rel_pixel_index = pixel_index * 4;
-	stru->pixels[rel_pixel_index + RED_VALUE] = color.r;
-	stru->pixels[rel_pixel_index + GREEN_VALUE] = color.g;
-	stru->pixels[rel_pixel_index + BLUE_VALUE] = color.b;
+	to_create.map = NULL;
+	to_create.path_north = NULL;
+	to_create.path_est = NULL;
+	to_create.path_south = NULL;
+	to_create.path_west = NULL;
+	to_create.path_sprite = NULL;
+	to_create.mlx_ptr = NULL;
+	to_create.img_ptr = NULL;
+	to_create.win_ptr = NULL;
+	to_create.pixels = NULL;
+	to_create.move_speed = 0.1;
+	to_create.rot_speed = 0.1;
+	to_create.save = 0;
+	return (to_create);
 }
 
-double	d_pythagore(int a_x, int b_x, int a_y, int b_y)
+t_stru	*malloc_struct(void)
 {
-	return (sqrt(pow((double)(b_x - a_x), 2) + pow((double)(b_y - a_y), 2)));
+	t_stru *to_malloc;
+
+	if (!(to_malloc = malloc(sizeof(t_stru))))
+		return (NULL);
+	*to_malloc = create_struct();
+	return (to_malloc);
 }
 
-void	draw_circle(t_stru *stru, int coord_x, int coord_y, int radius)
+void	free_struct(t_stru *to_free, int end)
 {
-	int		actual_x;
-	int		actual_y;
-	int		target_x;
-	int		target_y;
+	int y;
 
-	target_x = coord_x + radius;
-	target_y = coord_y + radius;
-	actual_x = coord_x - radius;
-	while (actual_x < target_x)
+	y = 0;
+	if (end)
+		destroy_ptrs(to_free);
+	if (to_free->map)
 	{
-		actual_y = coord_y - radius;
-		while (actual_y < target_y)
-		{
-			if (d_pythagore(coord_x, actual_x, coord_y, actual_y) <= radius)
-				put_pixel(stru, create_color(255, 255, 255), actual_x,
-				actual_y);
-			actual_y++;
-		}
-		actual_x++;
+		while (y <= to_free->map_height)
+			free(to_free->map[y++]);
 	}
+	if (to_free->map)
+		free(to_free->map);
+	if (to_free->path_north)
+		free(to_free->path_north);
+	if (to_free->path_est)
+		free(to_free->path_est);
+	if (to_free->path_south)
+		free(to_free->path_south);
+	if (to_free->path_west)
+		free(to_free->path_west);
+	if (to_free->path_sprite)
+		free(to_free->path_sprite);
+	free(to_free);
 }
 
-void	draw_line(t_stru *stru, t_vect pos1, t_vect pos2, t_color color)
+t_color	create_color(int r, int b, int g)
 {
-	t_vect	d;
-	t_vect	s;
-	int		err;
-	int		e2;
+	t_color color;
 
-	d.x = abs(pos2.x - pos1.x);
-	s.x = pos1.x < pos2.x ? 1 : -1;
-	d.y = abs(pos2.y - pos1.y);
-	s.y = pos1.y < pos2.y ? 1 : -1;
-	err = (d.x > d.y ? d.x : -d.y) / 2;
-	while (!(pos1.x == pos2.x && pos1.y == pos2.y))
-	{
-		put_pixel(stru, color, pos1.x, pos1.y);
-		e2 = err;
-		if (e2 > -d.x)
-		{
-			err -= d.y;
-			pos1.x += s.x;
-		}
-		if (e2 < d.y)
-		{
-			err += d.x;
-			pos1.y += s.y;
-		}
-	}
+	color.r = r;
+	color.g = g;
+	color.b = b;
+	return (color);
+}
+
+t_vect	create_vect(int x, int y)
+{
+	t_vect vect;
+
+	vect.x = x;
+	vect.y = y;
+	return (vect);
 }

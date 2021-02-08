@@ -6,80 +6,76 @@
 /*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/08 15:18:39 by safernan          #+#    #+#             */
-/*   Updated: 2021/02/08 15:18:41 by safernan         ###   ########.fr       */
+/*   Updated: 2021/02/08 15:49:08 by safernan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/cub3d.h"
 
-void	put_pixel(t_stru *stru, t_color color, int x, int y)
+int		get_data(t_stru *stru)
 {
-	int pixel_index;
-	int rel_pixel_index;
+	int i;
 
-	if (x < 0 || x >= stru->screen_width || y < 0 || y >= stru->screen_height)
-		return ;
-	pixel_index = x + (y * stru->screen_width);
-	rel_pixel_index = pixel_index * 4;
-	stru->pixels[rel_pixel_index + RED_VALUE] = color.r;
-	stru->pixels[rel_pixel_index + GREEN_VALUE] = color.g;
-	stru->pixels[rel_pixel_index + BLUE_VALUE] = color.b;
-}
-
-double	d_pythagore(int a_x, int b_x, int a_y, int b_y)
-{
-	return (sqrt(pow((double)(b_x - a_x), 2) + pow((double)(b_y - a_y), 2)));
-}
-
-void	draw_circle(t_stru *stru, int coord_x, int coord_y, int radius)
-{
-	int		actual_x;
-	int		actual_y;
-	int		target_x;
-	int		target_y;
-
-	target_x = coord_x + radius;
-	target_y = coord_y + radius;
-	actual_x = coord_x - radius;
-	while (actual_x < target_x)
+	i = 0;
+	while (i < 5)
 	{
-		actual_y = coord_y - radius;
-		while (actual_y < target_y)
-		{
-			if (d_pythagore(coord_x, actual_x, coord_y, actual_y) <= radius)
-				put_pixel(stru, create_color(255, 255, 255), actual_x,
-				actual_y);
-			actual_y++;
-		}
-		actual_x++;
+		stru->img[i].pixels = mlx_get_data_addr(stru->img[i].img_ptr,
+		&(stru->img[i].bpp), &(stru->img[i].sizeline), &(stru->img[i].endian));
+		i++;
 	}
+	i = 0;
+	while (i < 5)
+		if (!stru->img[i++].pixels)
+			return (1);
+	return (0);
 }
 
-void	draw_line(t_stru *stru, t_vect pos1, t_vect pos2, t_color color)
+int		get_ptrs(t_stru *stru)
 {
-	t_vect	d;
-	t_vect	s;
-	int		err;
-	int		e2;
+	int i;
 
-	d.x = abs(pos2.x - pos1.x);
-	s.x = pos1.x < pos2.x ? 1 : -1;
-	d.y = abs(pos2.y - pos1.y);
-	s.y = pos1.y < pos2.y ? 1 : -1;
-	err = (d.x > d.y ? d.x : -d.y) / 2;
-	while (!(pos1.x == pos2.x && pos1.y == pos2.y))
-	{
-		put_pixel(stru, color, pos1.x, pos1.y);
-		e2 = err;
-		if (e2 > -d.x)
-		{
-			err -= d.y;
-			pos1.x += s.x;
-		}
-		if (e2 < d.y)
-		{
-			err += d.x;
-			pos1.y += s.y;
-		}
-	}
+	i = 0;
+	stru->img[0].img_ptr = mlx_xpm_file_to_image(stru->mlx_ptr,
+							stru->path_north, &stru->img[0].width,
+							&stru->img[0].height);
+	stru->img[1].img_ptr = mlx_xpm_file_to_image(stru->mlx_ptr,
+							stru->path_south, &stru->img[1].width,
+							&stru->img[1].height);
+	stru->img[2].img_ptr = mlx_xpm_file_to_image(stru->mlx_ptr,
+							stru->path_est, &stru->img[2].width,
+							&stru->img[2].height);
+	stru->img[3].img_ptr = mlx_xpm_file_to_image(stru->mlx_ptr,
+							stru->path_west, &stru->img[3].width,
+							&stru->img[3].height);
+	stru->img[4].img_ptr = mlx_xpm_file_to_image(stru->mlx_ptr,
+							stru->path_sprite, &stru->img[4].width,
+							&stru->img[4].height);
+	while (i < 5)
+		if (!stru->img[i++].img_ptr)
+			return (1);
+	return (0);
+}
+
+void	init_dimensions(t_stru *stru)
+{
+	stru->img[0].width = 225;
+	stru->img[0].height = 225;
+	stru->img[1].width = 275;
+	stru->img[1].height = 183;
+	stru->img[2].width = 512;
+	stru->img[2].height = 341;
+	stru->img[3].width = 290;
+	stru->img[3].height = 174;
+	stru->img[4].width = 1280;
+	stru->img[4].height = 720;
+}
+
+int		init_textures(t_stru *stru)
+{
+	init_dimensions(stru);
+	if (get_ptrs(stru))
+		return (1);
+	if (get_data(stru))
+		return (1);
+	return (0);
 }

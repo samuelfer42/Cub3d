@@ -6,80 +6,124 @@
 /*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/08 15:17:41 by safernan          #+#    #+#             */
-/*   Updated: 2021/02/08 15:17:44 by safernan         ###   ########.fr       */
+/*   Updated: 2021/02/08 15:48:25 by safernan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/cub3d.h"
 
-void	put_pixel(t_stru *stru, t_color color, int x, int y)
+void	calcul_height_column(t_stru *stru)
 {
-	int pixel_index;
-	int rel_pixel_index;
-
-	if (x < 0 || x >= stru->screen_width || y < 0 || y >= stru->screen_height)
-		return ;
-	pixel_index = x + (y * stru->screen_width);
-	rel_pixel_index = pixel_index * 4;
-	stru->pixels[rel_pixel_index + RED_VALUE] = color.r;
-	stru->pixels[rel_pixel_index + GREEN_VALUE] = color.g;
-	stru->pixels[rel_pixel_index + BLUE_VALUE] = color.b;
+	if (stru->side == 0)
+		stru->perp_wall_dist = (stru->map_x - stru->pos_x +
+								(1 - stru->step_x) / 2) / stru->raydir_x;
+	else
+		stru->perp_wall_dist = (stru->map_y - stru->pos_y +
+								(1 - stru->step_y) / 2) / stru->raydir_y;
+	stru->line_height = (int)(stru->screen_height / stru->perp_wall_dist);
+	stru->draw_start = -stru->line_height / 2 + stru->screen_height / 2;
+	if (stru->draw_start < 0)
+		stru->draw_start = 0;
+	stru->draw_end = stru->line_height / 2 + stru->screen_height / 2;
+	if (stru->draw_end >= stru->screen_height)
+		stru->draw_end = stru->screen_height - 1;
 }
 
-double	d_pythagore(int a_x, int b_x, int a_y, int b_y)
+void	loop(t_stru *stru, t_texture_column *col, int x)
 {
-	return (sqrt(pow((double)(b_x - a_x), 2) + pow((double)(b_y - a_y), 2)));
-}
+	int					i;
 
-void	draw_circle(t_stru *stru, int coord_x, int coord_y, int radius)
-{
-	int		actual_x;
-	int		actual_y;
-	int		target_x;
-	int		target_y;
-
-	target_x = coord_x + radius;
-	target_y = coord_y + radius;
-	actual_x = coord_x - radius;
-	while (actual_x < target_x)
+	while (col->y < stru->draw_end)
 	{
-		actual_y = coord_y - radius;
-		while (actual_y < target_y)
-		{
-			if (d_pythagore(coord_x, actual_x, coord_y, actual_y) <= radius)
-				put_pixel(stru, create_color(255, 255, 255), actual_x,
-				actual_y);
-			actual_y++;
-		}
-		actual_x++;
+		col->pixel_index = (x + (col->y * stru->screen_width)) * 4;
+		col->tex_y = (int)col->tex_pos;
+		col->tex_pos += col->step;
+		i = -1;
+		while (++i < 4)
+			col->color[i] = stru->img[col->tex_num].pixels[col->tex_x * 4 +
+			4 * stru->img[col->tex_num].width * col->tex_y + i];
+		i = -1;
+		while (++i < 4)
+			stru->pixels[col->pixel_index + i] = col->color[i];
+		col->y++;
 	}
 }
 
-void	draw_line(t_stru *stru, t_vect pos1, t_vect pos2, t_color color)
+void	draw_column(t_stru *stru, int x)
 {
-	t_vect	d;
-	t_vect	s;
-	int		err;
-	int		e2;
+	t_texture_column	*col;
 
-	d.x = abs(pos2.x - pos1.x);
-	s.x = pos1.x < pos2.x ? 1 : -1;
-	d.y = abs(pos2.y - pos1.y);
-	s.y = pos1.y < pos2.y ? 1 : -1;
-	err = (d.x > d.y ? d.x : -d.y) / 2;
-	while (!(pos1.x == pos2.x && pos1.y == pos2.y))
+	if (!(col = malloc(sizeof(t_texture_column))))
+		return ;
+	col->wall_x = (stru->side == 0) ? stru->pos_y + stru->perp_wall_dist *
+		stru->raydir_y : stru->pos_x + stru->perp_wall_dist * stru->raydir_x;
+	col->wall_x -= floor((col->wall_x));
+	col->tex_num = (stru->side == 0) ? 1 : 0;
+	if (stru->hit == 2)
+		col->tex_num = 4;
+	else if (stru->side == 1)
+		col->tex_num = (stru->raydir_y > 0) ? 1 : 0;
+	else
+		col->tex_num = (stru->raydir_x > 0) ? 2 : 3;
+	col->tex_x = (int)(col->wall_x * (double)(stru->img[col->tex_num].width));
+	if ((stru->side == 0 && stru->raydir_x > 0) || (stru->side == 1 &&
+		stru->raydir_y < 0))
+		col->tex_x = stru->img[col->tex_num].width - col->tex_x - 1;
+	col->step = 1.0 * stru->img[col->tex_num].height / stru->line_height;
+	col->tex_pos = (stru->draw_start - stru->screen_height /
+					2 + stru->line_height / 2) * col->step;
+	col->y = stru->draw_start;
+	loop(stru, col, x);
+	free(col);
+}
+
+void	top_floor(t_stru *stru)
+{
+	int		x;
+	int		y;
+
+	y = 0;
+	while (y <= stru->screen_height)
 	{
-		put_pixel(stru, color, pos1.x, pos1.y);
-		e2 = err;
-		if (e2 > -d.x)
+		x = 0;
+		while (x <= stru->screen_width)
 		{
-			err -= d.y;
-			pos1.x += s.x;
+			if (y <= stru->screen_height / 2)
+				put_pixel(stru, stru->rgb_top, x, y);
+			else
+				put_pixel(stru, stru->rgb_floor, x, y);
+			x++;
 		}
-		if (e2 < d.y)
-		{
-			err += d.x;
-			pos1.y += s.y;
-		}
+		y++;
+	}
+	print_pos(stru);
+}
+
+void	raycast(t_stru *stru)
+{
+	int x;
+	int old_s;
+	int s;
+
+	x = 0;
+	old_s = 0;
+	s = 0;
+	top_floor(stru);
+	while (x < stru->screen_width)
+	{
+		old_s = s;
+		stru->camera_x = (2 * x / (double)(stru->screen_width)) - 1;
+		stru->raydir_x = stru->dir_x + stru->plane_x * stru->camera_x;
+		stru->raydir_y = stru->dir_y + stru->plane_y * stru->camera_x;
+		stru->map_x = (int)(stru->pos_x);
+		stru->map_y = (int)(stru->pos_y);
+		stru->hit = 0;
+		stru->step_x = -1;
+		dda(stru);
+		calcul_height_column(stru);
+		draw_column(stru, x);
+		s = stru->side;
+		print_ray(stru);
+		x++;
 	}
 }

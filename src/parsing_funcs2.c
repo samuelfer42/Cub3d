@@ -6,60 +6,53 @@
 /*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/08 15:15:56 by safernan          #+#    #+#             */
-/*   Updated: 2021/02/08 15:16:03 by safernan         ###   ########.fr       */
+/*   Updated: 2021/02/08 15:48:03 by safernan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/cub3d.h"
 
-int		exit_hook(t_stru *stru)
+int		check_keys(char *line, int i)
 {
-	free_struct(stru, 1);
-	stru = NULL;
-	exit(0);
-}
+	static int	keys[8] = {0, 0, 0, 0, 0, 0, 0};
+	int			j;
 
-int		init_mlx(t_stru *stru)
-{
-	stru->mlx_ptr = mlx_init();
-	if (stru->save == 0)
-		stru->win_ptr = mlx_new_window(stru->mlx_ptr, stru->screen_width,
-		stru->screen_height, "cub3d");
-	stru->img_ptr = mlx_new_image(stru->mlx_ptr, stru->screen_width,
-					stru->screen_height);
-	stru->pixels = mlx_get_data_addr(stru->img_ptr, &(stru->bpp),
-	&(stru->sizeline), &(stru->endian));
+	j = 0;
+	if (line[i] == 'S' && line[i + 1] == 'O' && line[i + 2] == ' ')
+		keys[0]++;
+	if (line[i] == 'N' && line[i + 1] == 'O' && line[i + 2] == ' ')
+		keys[1]++;
+	if (line[i] == 'E' && line[i + 1] == 'A' && line[i + 2] == ' ')
+		keys[2]++;
+	if (line[i] == 'W' && line[i + 1] == 'E' && line[i + 2] == ' ')
+		keys[3]++;
+	if (line[i] == 'S' && line[i + 1] == ' ')
+		keys[4]++;
+	if (line[i] == 'F' && line[i + 1] == ' ')
+		keys[5]++;
+	if (line[i] == 'C' && line[i + 1] == ' ')
+		keys[6]++;
+	if (line[i] == 'R' && line[i + 1] == ' ')
+		keys[7]++;
+	j = 0;
+	while (j < 8)
+		if (keys[j++] > 1)
+			return (1);
 	return (0);
 }
 
-int		key_hook(int keyhook, t_stru *stru)
+int		map_and_check(t_stru *stru, int fd)
 {
-	if (keyhook == ESC)
-		exit_hook(stru);
-	vertical_move(keyhook, stru);
-	horizontal_move(keyhook, stru);
-	rotation_left(keyhook, stru);
-	rotation_right(keyhook, stru);
-	mlx_clear_window(stru->mlx_ptr, stru->win_ptr);
-	raycast(stru);
-	mlx_put_image_to_window(stru->mlx_ptr, stru->win_ptr, stru->img_ptr, 0, 0);
-	return (0);
-}
+	char *map;
 
-void	destroy_ptrs(t_stru *stru)
-{
-	if (stru->img_ptr)
-		mlx_destroy_image(stru->mlx_ptr, stru->img_ptr);
-	if (stru->img[0].img_ptr)
-		mlx_destroy_image(stru->mlx_ptr, stru->img[0].img_ptr);
-	if (stru->img[1].img_ptr)
-		mlx_destroy_image(stru->mlx_ptr, stru->img[1].img_ptr);
-	if (stru->img[2].img_ptr)
-		mlx_destroy_image(stru->mlx_ptr, stru->img[2].img_ptr);
-	if (stru->img[3].img_ptr)
-		mlx_destroy_image(stru->mlx_ptr, stru->img[3].img_ptr);
-	if (stru->img[4].img_ptr)
-		mlx_destroy_image(stru->mlx_ptr, stru->img[4].img_ptr);
-	if (stru->win_ptr)
-		mlx_destroy_window(stru->mlx_ptr, stru->win_ptr);
+	map = map_to_str(fd);
+	if (tab_to_matrix(stru, map))
+		return (error_parsing(3));
+	free(map);
+	if (check_stru(stru))
+		return (error_parsing(4));
+	if (check_map(stru))
+		return (error_parsing(5));
+	begin_plane(stru);
+	return (0);
 }

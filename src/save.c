@@ -6,80 +6,81 @@
 /*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/02/08 15:17:59 by safernan          #+#    #+#             */
-/*   Updated: 2021/02/08 15:18:01 by safernan         ###   ########.fr       */
+/*   Updated: 2021/02/08 15:48:38 by safernan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/cub3d.h"
 
-void	put_pixel(t_stru *stru, t_color color, int x, int y)
+int		check_save(char **av, t_stru *stru)
 {
-	int pixel_index;
-	int rel_pixel_index;
-
-	if (x < 0 || x >= stru->screen_width || y < 0 || y >= stru->screen_height)
-		return ;
-	pixel_index = x + (y * stru->screen_width);
-	rel_pixel_index = pixel_index * 4;
-	stru->pixels[rel_pixel_index + RED_VALUE] = color.r;
-	stru->pixels[rel_pixel_index + GREEN_VALUE] = color.g;
-	stru->pixels[rel_pixel_index + BLUE_VALUE] = color.b;
-}
-
-double	d_pythagore(int a_x, int b_x, int a_y, int b_y)
-{
-	return (sqrt(pow((double)(b_x - a_x), 2) + pow((double)(b_y - a_y), 2)));
-}
-
-void	draw_circle(t_stru *stru, int coord_x, int coord_y, int radius)
-{
-	int		actual_x;
-	int		actual_y;
-	int		target_x;
-	int		target_y;
-
-	target_x = coord_x + radius;
-	target_y = coord_y + radius;
-	actual_x = coord_x - radius;
-	while (actual_x < target_x)
+	if (av[2])
 	{
-		actual_y = coord_y - radius;
-		while (actual_y < target_y)
+		if (!ft_strncmp(av[2], "--save", 6))
+			stru->save = 1;
+		else
 		{
-			if (d_pythagore(coord_x, actual_x, coord_y, actual_y) <= radius)
-				put_pixel(stru, create_color(255, 255, 255), actual_x,
-				actual_y);
-			actual_y++;
+			ft_putstr_fd("Error\nUnknown second argument\n", 1);
+			return (1);
 		}
-		actual_x++;
+	}
+	return (0);
+}
+
+void	bpm_init(t_stru *stru, t_save *save)
+{
+	save->size = 54 + 4 * stru->screen_width * stru->screen_height;
+	save->zero = 0;
+	save->offset_begin = 54;
+	save->header_bytes = 40;
+	save->plane = 1;
+	save->bpp = 32;
+	save->fd = open("screenshot.bmp", O_RDWR | O_CREAT, S_IRWXU | O_TRUNC);
+	if (save->fd == -1)
+		ft_putstr_fd("Error\nCan't create image\n", 1);
+}
+
+void	bpm_pixels(t_stru *stru, int fd)
+{
+	int		y;
+	int		x;
+	int		l;
+
+	y = 0;
+	while (y < stru->screen_height)
+	{
+		x = 0;
+		l = stru->screen_width * (stru->screen_height - y);
+		while (x < stru->screen_width)
+		{
+			write(fd, &stru->pixels[l * 4], 4);
+			l++;
+			x++;
+		}
+		y++;
 	}
 }
 
-void	draw_line(t_stru *stru, t_vect pos1, t_vect pos2, t_color color)
+void	save(t_stru *stru)
 {
-	t_vect	d;
-	t_vect	s;
-	int		err;
-	int		e2;
+	t_save	save;
 
-	d.x = abs(pos2.x - pos1.x);
-	s.x = pos1.x < pos2.x ? 1 : -1;
-	d.y = abs(pos2.y - pos1.y);
-	s.y = pos1.y < pos2.y ? 1 : -1;
-	err = (d.x > d.y ? d.x : -d.y) / 2;
-	while (!(pos1.x == pos2.x && pos1.y == pos2.y))
-	{
-		put_pixel(stru, color, pos1.x, pos1.y);
-		e2 = err;
-		if (e2 > -d.x)
-		{
-			err -= d.y;
-			pos1.x += s.x;
-		}
-		if (e2 < d.y)
-		{
-			err += d.x;
-			pos1.y += s.y;
-		}
-	}
+	bpm_init(stru, &save);
+	write(save.fd, "BM", 2);
+	write(save.fd, &save.size, sizeof(int));
+	write(save.fd, &save.zero, sizeof(int));
+	write(save.fd, &save.offset_begin, sizeof(int));
+	write(save.fd, &save.header_bytes, sizeof(int));
+	write(save.fd, &stru->screen_width, sizeof(int));
+	write(save.fd, &stru->screen_height, sizeof(int));
+	write(save.fd, &save.plane, sizeof(short int));
+	write(save.fd, &save.bpp, sizeof(short int));
+	write(save.fd, &save.zero, sizeof(int));
+	write(save.fd, &save.zero, sizeof(int));
+	write(save.fd, &save.zero, sizeof(int));
+	write(save.fd, &save.zero, sizeof(int));
+	write(save.fd, &save.zero, sizeof(int));
+	write(save.fd, &save.zero, sizeof(int));
+	bpm_pixels(stru, save.fd);
+	close(save.fd);
 }
