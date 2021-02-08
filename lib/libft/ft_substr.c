@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_substr.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: safernan <safernan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/10/15 14:25:31 by safernan          #+#    #+#             */
-/*   Updated: 2019/10/27 00:27:56 by safernan         ###   ########.fr       */
+/*   Created: 2019/11/05 19:30:09 by safernan           #+#    #+#             */
+/*   Updated: 2019/11/12 09:01:35 by safernan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,28 +14,18 @@
 
 char	*ft_substr(char const *s, unsigned int start, size_t len)
 {
-	char				*new;
-	unsigned int		i;
+	char	*res;
+	size_t	count;
 
-	i = 0;
-	if (!s)
+	if (!s || len < 1 || len > 2147483647)
+		return (ft_strdup(""));
+	if (start > ft_strlen(s))
+		return (ft_strdup(""));
+	count = 0;
+	if (!(res = malloc(sizeof(char) * (len + 1))))
 		return (NULL);
-	if (start < len)
-	{
-		if (!(new = malloc(sizeof(char) * (len + 1))))
-			return (0);
-		while (s[start + i] && i < len)
-		{
-			new[i] = s[start + i];
-			i++;
-		}
-		new[i] = 0;
-	}
-	else
-	{
-		if (!(new = malloc(sizeof(char))))
-			return (0);
-		new[0] = '\0';
-	}
-	return (new);
+	while (count < len)
+		res[count++] = s[start++];
+	res[count] = 0;
+	return (res);
 }

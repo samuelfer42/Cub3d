@@ -1,5 +1,6 @@
-NAME	= Cub3D
-
+CC=clang
+CFLAGS=-Wall -Wextra -Werror
+EXEC=cub3D
 SRCS=	src/main.c					\
 		src/mlx_funcs.c				\
 		src/structs_funcs.c			\
@@ -18,24 +19,22 @@ SRCS=	src/main.c					\
 		src/save.c					\
 		src/parsing_funcs2.c		\
 
-CFLAGS	= -Wall -Wextra -Werror
-OBJS	= ${SRCS:.c=.o}
+OBJ= $(SRCS:.c=.o)
 
-all:		${NAME}
+all: $(EXEC)
 
+$(EXEC): $(OBJ)
+	$(CC) -o $@ $^ $(LDFLAGS) lib/mlx/libmlx.a lib/libft/libft.a -lm -lbsd -lX11 -lXext
 
-$(NAME):	${OBJS}
-		gcc ${OBJS} -I mlx libmlx.dylib -framework OpenGL -framework AppKit -o $(NAME)
+%.o: %.c
+	$(CC) -o $@ -c $< $(CFLAGS)
 
-%.o:%.c
-		gcc -Wall -Wextra -Werror -Imlx -Iinc -Ilibft -c $< -o $@
+.PHONY: clean fclean
 
-clean:	
-		rm -f ${OBJS}
+clean:
+	rm -rf src/*.o
 
-fclean:		clean
-		rm -f ${NAME}
+fclean: clean
+	rm -rf $(EXEC)
 
-re:		fclean all
-
-.PHONY:		clean fclean
+re: fclean all

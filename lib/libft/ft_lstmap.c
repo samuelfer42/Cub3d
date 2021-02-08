@@ -1,40 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_lstmap_bonus.c                                  :+:      :+:    :+:   */
+/*   ft_lstmap.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: safernan <safernan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/10/27 00:20:19 by safernan          #+#    #+#             */
-/*   Updated: 2019/10/28 20:12:34 by safernan         ###   ########.fr       */
+/*   Created: 2019/11/13 03:33:30 by safernan           #+#    #+#             */
+/*   Updated: 2019/11/13 04:36:21 by safernan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-// does not work [KO]
+
 #include "libft.h"
 
 t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))
 {
-	t_list		*save;
-	t_list		*out;
-	t_list		*i;
+	t_list **res;
+	t_list *tmp;
+	t_list *tmp_res;
 
 	if (!lst)
-		return (lst);
-	if (!(out = ft_lstnew(f(lst->content))))
 		return (NULL);
-	i = lst;
-	save = out;
-	while (1)
+	if (!(res = malloc(sizeof(t_list) * ft_lstsize(lst))))
+		return (NULL);
+	tmp = *res;
+	while (lst)
 	{
-		if (!(out->next = ft_lstnew(f(i->content))))
+		tmp_res = f(lst);
+		if (!tmp_res)
+			ft_lstdelone(tmp_res, del);
+		else
 		{
-			ft_lstclear(&save, del);
-			return (NULL);
+			tmp = tmp_res;
+			lst = lst->next;
 		}
-		i = i->next;
-		out = out->next;
-		if (!i || !out)
-			break ;
 	}
-	return (save);
+	return (*res);
 }

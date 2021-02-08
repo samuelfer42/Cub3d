@@ -3,40 +3,31 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strlcat.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: safernan <safernan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/10/08 17:20:12 by safernan          #+#    #+#             */
-/*   Updated: 2019/10/09 17:38:28 by safernan         ###   ########.fr       */
+/*   Created: 2019/11/04 21:48:05 by safernan           #+#    #+#             */
+/*   Updated: 2019/11/11 20:51:37 by safernan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-size_t	ft_strlcat(char *dst, const char *src, size_t dstsize)
+size_t	ft_strlcat(char *dst, const char *src, size_t size)
 {
-	const char	*tmpsrc;
-	char		*tmpdst;
-	size_t		dsize;
-	size_t		length;
+	size_t		count;
+	size_t		len;
 
-	tmpsrc = src;
-	tmpdst = dst;
-	length = dstsize;
-	while (length-- && *tmpdst)
-		tmpdst++;
-	dsize = tmpdst - dst;
-	length = dstsize - dsize;
-	if (!length)
-		return (dsize + ft_strlen(src));
-	while (*tmpsrc)
+	len = ft_strlen(dst) + ft_strlen(src);
+	if (size <= ft_strlen(dst))
+		return (ft_strlen(src) + size);
+	while (*dst)
+		dst++;
+	count = 0;
+	while ((count < size - (len - ft_strlen(src)) - 1) && src[count])
 	{
-		if (length != 1)
-		{
-			*tmpdst++ = *tmpsrc;
-			length--;
-		}
-		tmpsrc++;
+		dst[count] = src[count];
+		count++;
 	}
-	*tmpdst = '\0';
-	return (dsize + (tmpsrc - src));
+	dst[count] = '\0';
+	return (len);
 }

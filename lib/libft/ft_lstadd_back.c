@@ -1,21 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_lstadd_front.c                                  :+:      :+:    :+:   */
+/*   ft_lstadd_back.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: safernan <safernan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/10/27 00:12:06 by safernan          #+#    #+#             */
-/*   Updated: 2019/10/27 00:12:08 by safernan         ###   ########.fr       */
+/*   Created: 2019/11/13 02:56:34 by safernan           #+#    #+#             */
+/*   Updated: 2019/11/13 05:07:36 by safernan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void	ft_lstadd_front(t_list **alst, t_list *new)
+void	ft_lstadd_back(t_list **alst, t_list *new)
 {
-	if (!alst || !new)
+	t_list	*tmp;
+
+	tmp = *alst;
+	if (!tmp)
+	{
+		*alst = new;
 		return ;
-	new->next = *alst;
-	*alst = new;
+	}
+	while (tmp->next)
+		tmp = tmp->next;
+	tmp->next = new;
 }

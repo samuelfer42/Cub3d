@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strlcpy.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: safernan <safernan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/10/09 17:36:14 by safernan          #+#    #+#             */
-/*   Updated: 2019/10/26 23:48:38 by safernan         ###   ########.fr       */
+/*   Created: 2019/11/04 21:38:53 by safernan           #+#    #+#             */
+/*   Updated: 2019/11/11 20:55:44 by safernan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,23 +14,17 @@
 
 size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 {
-	size_t i;
-	size_t src_len;
+	size_t count;
 
-	i = 0;
-	if (!dst || !src)
-		return (0);
-	src_len = ft_strlen(src);
-	if (!size)
-		return (src_len);
-	while (src[i] != '\0' && i < size)
+	count = 0;
+	if (size > 0)
 	{
-		dst[i] = src[i];
-		i++;
+		while (src[count] && count < size - 1)
+		{
+			dst[count] = src[count];
+			count++;
+		}
+		dst[count] = '\0';
 	}
-	if (size < src_len)
-		dst[size - 1] = '\0';
-	else if (size != 0)
-		dst[i] = '\0';
-	return (src_len);
+	return (ft_strlen(src));
 }

@@ -3,18 +3,25 @@
 /*                                                        :::      ::::::::   */
 /*   ft_toupper.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: safernan <safernan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/10/07 11:53:47 by safernan          #+#    #+#             */
-/*   Updated: 2019/10/15 16:43:06 by safernan         ###   ########.fr       */
+/*   Created: 2019/11/04 17:57:17 by safernan           #+#    #+#             */
+/*   Updated: 2019/11/06 01:08:23 by safernan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
-
-int		ft_toupper(int c)
+int	ft_islow(int c)
 {
 	if (c >= 'a' && c <= 'z')
-		return (c - 'a' + 'A');
-	return (c);
+		return (1);
+	else
+		return (0);
+}
+
+int	ft_toupper(int c)
+{
+	if (ft_islow(c))
+		return (c - 32);
+	else
+		return (c);
 }

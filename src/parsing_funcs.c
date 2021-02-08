@@ -5,61 +5,105 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/02/08 15:15:34 by safernan          #+#    #+#             */
-/*   Updated: 2021/02/08 15:15:35 by safernan         ###   ########.fr       */
+/*   Created: 2021/02/08 19:41:52 by safernan          #+#    #+#             */
+/*   Updated: 2021/02/08 19:41:54 by safernan         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/cub3d.h"
 
-int		exit_hook(t_stru *stru)
+char	*get_path(char *line, int i)
 {
-	free_struct(stru, 1);
-	stru = NULL;
-	exit(0);
+	while (line[i] && line[i] == ' ')
+		i++;
+	return (ft_substr(line, i, ft_strlen(line) - i));
 }
 
-int		init_mlx(t_stru *stru)
+t_color	get_rgb(char *line, int i)
 {
-	stru->mlx_ptr = mlx_init();
-	if (stru->save == 0)
-		stru->win_ptr = mlx_new_window(stru->mlx_ptr, stru->screen_width,
-		stru->screen_height, "cub3d");
-	stru->img_ptr = mlx_new_image(stru->mlx_ptr, stru->screen_width,
-					stru->screen_height);
-	stru->pixels = mlx_get_data_addr(stru->img_ptr, &(stru->bpp),
-	&(stru->sizeline), &(stru->endian));
+	t_color color;
+
+	i++;
+	while (line[i] && line[i] == ' ')
+		i++;
+	color.r = ft_atoi(line + i);
+	while (line[i] && (ft_isdigit(line[i])))
+		i++;
+	i++;
+	color.g = ft_atoi(line + i);
+	while (line[i] && (ft_isdigit(line[i])))
+		i++;
+	i++;
+	color.b = ft_atoi(line + i);
+	return (color);
+}
+
+int		check_stru(t_stru *stru)
+{
+	if (stru->rgb_floor.r > 255 || stru->rgb_floor.r < 0)
+		return (1);
+	if (stru->rgb_floor.g > 255 || stru->rgb_floor.g < 0)
+		return (1);
+	if (stru->rgb_floor.b > 255 || stru->rgb_floor.b < 0)
+		return (1);
+	if (stru->rgb_top.r > 255 || stru->rgb_top.r < 0)
+		return (1);
+	if (stru->rgb_top.g > 255 || stru->rgb_top.g < 0)
+		return (1);
+	if (stru->rgb_top.b > 255 || stru->rgb_top.b < 0)
+		return (1);
+	if (!stru->map)
+		return (1);
+	if (stru->screen_width < 1 || stru->screen_height < 1)
+		return (1);
+	if (!stru->path_north)
+		return (1);
+	if (!stru->path_south)
+		return (1);
+	if (!stru->path_est)
+		return (1);
+	if (!stru->path_west)
+		return (1);
 	return (0);
 }
 
-int		key_hook(int keyhook, t_stru *stru)
+void	res(int i, t_stru *stru, char *line)
 {
-	if (keyhook == ESC)
-		exit_hook(stru);
-	vertical_move(keyhook, stru);
-	horizontal_move(keyhook, stru);
-	rotation_left(keyhook, stru);
-	rotation_right(keyhook, stru);
-	mlx_clear_window(stru->mlx_ptr, stru->win_ptr);
-	raycast(stru);
-	mlx_put_image_to_window(stru->mlx_ptr, stru->win_ptr, stru->img_ptr, 0, 0);
-	return (0);
+	stru->screen_width = ft_atoi(line + i + 1);
+	while (line[i] && (line[i] == 'R' || line[i] == ' '))
+		i++;
+	while (line[i] && ft_isdigit(line[i]))
+		i++;
+	stru->screen_height = ft_atoi(line + i);
+	if (stru->screen_width > 1800)
+		stru->screen_width = 1800;
+	if (stru->screen_height > 900)
+		stru->screen_height = 900;
 }
 
-void	destroy_ptrs(t_stru *stru)
+int		analyse_line(char *line, t_stru *stru, int i)
 {
-	if (stru->img_ptr)
-		mlx_destroy_image(stru->mlx_ptr, stru->img_ptr);
-	if (stru->img[0].img_ptr)
-		mlx_destroy_image(stru->mlx_ptr, stru->img[0].img_ptr);
-	if (stru->img[1].img_ptr)
-		mlx_destroy_image(stru->mlx_ptr, stru->img[1].img_ptr);
-	if (stru->img[2].img_ptr)
-		mlx_destroy_image(stru->mlx_ptr, stru->img[2].img_ptr);
-	if (stru->img[3].img_ptr)
-		mlx_destroy_image(stru->mlx_ptr, stru->img[3].img_ptr);
-	if (stru->img[4].img_ptr)
-		mlx_destroy_image(stru->mlx_ptr, stru->img[4].img_ptr);
-	if (stru->win_ptr)
-		mlx_destroy_window(stru->mlx_ptr, stru->win_ptr);
+	static int	count = 0;
+
+	if (check_keys(line, i))
+		return (error_parsing(6));
+	while (line[i] && line[i] == ' ')
+		i++;
+	if (line[i] == 'N' && line[i + 1] == 'O' && count++ >= 0)
+		stru->path_north = get_path(line, i + 3);
+	if (line[i] == 'S' && line[i + 1] == 'O' && count++ >= 0)
+		stru->path_south = get_path(line, i + 3);
+	if (line[i] == 'W' && line[i + 1] == 'E' && count++ >= 0)
+		stru->path_west = get_path(line, i + 3);
+	if (line[i] == 'E' && line[i + 1] == 'A' && count++ >= 0)
+		stru->path_est = get_path(line, i + 3);
+	if (line[i] == 'S' && line[i + 1] == ' ' && count++ >= 0)
+		stru->path_sprite = get_path(line, i + 2);
+	if (line[i] == 'F' && count++ >= 0)
+		stru->rgb_floor = get_rgb(line, i);
+	if (line[i] == 'C' && count++ >= 0)
+		stru->rgb_top = get_rgb(line, i);
+	if (line[i] == 'R' && count++ >= 0)
+		res(i, stru, line);
+	return (count);
 }

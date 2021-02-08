@@ -3,40 +3,48 @@
 /*                                                        :::      ::::::::   */
 /*   ft_strnstr.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: safernan <safernan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/10/08 17:19:01 by safernan          #+#    #+#             */
-/*   Updated: 2019/10/15 16:06:48 by safernan         ###   ########.fr       */
+/*   Created: 2019/11/04 22:37:41 by safernan           #+#    #+#             */
+/*   Updated: 2019/11/06 08:31:04 by safernan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include <string.h>
 
-char	*ft_strnstr(const char *big, const char *small, size_t len)
+int		is_find(const char *s1, const char *s2, size_t len, size_t count)
 {
-	size_t	i;
-	int		j;
-	char	*pt;
+	int c;
 
-	i = 0;
-	pt = 0;
-	if (small[i] == '\0')
-		return ((char *)big);
-	while (big[i] != '\0' && i < len)
+	c = 0;
+	while (s1[count] && s2[c] && count < len && s1[count] == s2[c])
 	{
-		if (big[i] == small[0])
+		count++;
+		c++;
+	}
+	if (s2[c] == 0)
+		return (1);
+	else
+		return (0);
+}
+
+char	*ft_strnstr(const char *s1, const char *s2, size_t len)
+{
+	size_t count;
+
+	count = 0;
+	if (!(*s2))
+		return ((char *)s1);
+	while (s1[count] && count < len)
+	{
+		if (s1[count] != s2[0])
+			count++;
+		else
 		{
-			pt = (char *)big + i;
-			j = 0;
-			while (big[i + j] == small[j] && i + j < len)
-			{
-				if (small[j + 1] == '\0')
-					return (pt);
-				j++;
-			}
-			pt = 0;
+			if (is_find(s1, s2, len, count))
+				return ((char *)s1 + count);
+			count++;
 		}
-		i++;
 	}
 	return (NULL);
 }

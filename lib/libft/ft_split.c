@@ -3,112 +3,100 @@
 /*                                                        :::      ::::::::   */
 /*   ft_split.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: safernan <safernan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/10/15 15:18:59 by safernan          #+#    #+#             */
-/*   Updated: 2019/10/22 18:26:21 by safernan         ###   ########.fr       */
+/*   Created: 2019/11/05 20:10:42 by safernan           #+#    #+#             */
+/*   Updated: 2019/11/12 06:06:47 by safernan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static void		fill_line(char const *s, char c, int count, char *new)
+static size_t	ft_countwords(char const *s, char c)
 {
-	int		i;
-	int		booleen;
-	int		nbr;
+	size_t	words;
+	size_t	count;
 
-	i = -1;
-	nbr = 0;
-	booleen = 0;
-	while (nbr < count + 1)
+	count = 0;
+	words = 0;
+	while (s[count])
 	{
-		i++;
-		if (s[i] != c && booleen == 0)
-		{
-			nbr++;
-			booleen = 1;
-		}
-		if (s[i] == c && booleen == 1)
-			booleen = 0;
+		while (s[count] && s[count] == c)
+			count++;
+		if (s[count] != c && s[count])
+			words++;
+		while (s[count] && s[count] != c)
+			count++;
 	}
-	while (s[i + booleen - 1] != c && s[i + booleen - 1])
-	{
-		new[booleen - 1] = s[i + booleen - 1];
-		booleen++;
-	}
-	return ;
+	return (words);
 }
 
-static int		len_word(char const *s, char c, int count)
+static char		*ft_strncapy(char *dest, char const *src, size_t n)
 {
-	int		i;
-	int		booleen;
-	int		nbr;
+	size_t count;
 
-	i = -1;
-	nbr = 0;
-	booleen = 0;
-	while (nbr < count + 1)
+	count = 0;
+	while (count < n && src[count])
 	{
-		i++;
-		if (s[i] != c && booleen == 0)
-		{
-			nbr++;
-			booleen = 1;
-		}
-		if (s[i] == c && booleen == 1)
-			booleen = 0;
+		dest[count] = src[count];
+		count++;
 	}
-	while (s[i] != c && s[i])
-	{
-		i++;
-		booleen++;
-	}
-	return (booleen - 1);
+	dest[count] = '\0';
+	return (dest);
 }
 
-static int		nbr_word(char const *s, char c)
+static char		*ft_strduper(char const *str, char c)
 {
-	int		i;
-	int		booleen;
-	int		nbr;
+	char	*s;
+	size_t	count;
 
-	nbr = 0;
-	i = 0;
-	booleen = 0;
-	while (s[i])
+	count = 0;
+	while (str[count] && str[count] != c)
+		count++;
+	if (!(s = malloc(sizeof(char) * (count + 1))))
+		return (0);
+	s = ft_strncapy(s, str, count);
+	return (s);
+}
+
+static int		ft_free(char **tab, int size)
+{
+	int count;
+
+	count = 0;
+	while (size >= count)
 	{
-		if (s[i] != c && booleen == 0)
-		{
-			nbr++;
-			booleen = 1;
-		}
-		if (s[i] == c && booleen == 1)
-			booleen = 0;
-		i++;
+		free(tab[count]);
+		count++;
 	}
-	return (nbr);
+	free(tab);
+	return (0);
 }
 
 char			**ft_split(char const *s, char c)
 {
-	char	**new;
-	int		i;
+	char			**res;
+	unsigned int	tab[2];
 
-	i = 0;
-	if (s == 0)
+	tab[0] = 0;
+	tab[1] = ft_countwords(s, c);
+	if (!(res = malloc(sizeof(char *) * (tab[1] + 1))))
 		return (0);
-	if (!(new = malloc(sizeof(char*) * (nbr_word(s, c) + 1))))
-		return (0);
-	while (i < nbr_word(s, c))
+	res[tab[1]] = 0;
+	tab[1] = 0;
+	while (s[tab[0]])
 	{
-		if (!(new[i] = malloc(sizeof(char) * (len_word(s, c, i) + 1))))
-			return (0);
-		fill_line(s, c, i, new[i]);
-		new[i][len_word(s, c, i)] = 0;
-		i++;
+		while (s[tab[0]] && s[tab[0]] == c)
+			tab[0]++;
+		if (s[tab[0]] != c && s[tab[0]])
+		{
+			if (!(res[tab[1]] = ft_strduper((s + tab[0]), c)))
+				if (ft_free(res, tab[1]))
+					return (0);
+			tab[1]++;
+		}
+		while (s[tab[0]] && s[tab[0]] != c)
+			tab[0]++;
 	}
-	new[nbr_word(s, c)] = 0;
-	return (new);
+	return (res);
 }

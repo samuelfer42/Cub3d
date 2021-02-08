@@ -3,56 +3,61 @@
 /*                                                        :::      ::::::::   */
 /*   ft_itoa.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: safernan <safernan@student.42.fr>          +#+  +:+       +#+        */
+/*   By: safernan <safernan@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2019/10/15 15:19:59 by safernan          #+#    #+#             */
-/*   Updated: 2019/10/15 15:20:01 by safernan         ###   ########.fr       */
+/*   Created: 2019/11/06 23:44:41 by safernan           #+#    #+#             */
+/*   Updated: 2019/11/07 00:09:05 by safernan          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static int	ft_size(int n)
+int		nb_len(int n)
 {
-	int len;
+	int count;
 
-	len = 0;
-	if (n < 0)
+	count = 0;
+	if (n == 0)
+		return (1);
+	while (n)
 	{
-		n *= -1;
-		len++;
-	}
-	while (n / 10 > 0)
-	{
-		len++;
 		n /= 10;
+		count++;
 	}
-	return (len + 1);
+	return (count);
 }
 
-char		*ft_itoa(int n)
+int		min(char *res)
 {
-	char	*tab;
-	int		len;
+	res[1] = '2';
+	return (147483648);
+}
+
+char	*ft_itoa(int n)
+{
+	char	*res;
+	int		count;
 	int		neg;
 
-	if (n == -2147483648)
-		return (ft_strdup("-2147483648"));
+	count = nb_len(n);
 	neg = 0;
-	len = ft_size(n);
-	if (!(tab = (char *)malloc(sizeof(char) * len + 1)))
-		return (0);
 	if (n < 0)
-		neg = -1;
+		neg = 1;
+	if (!(res = malloc(sizeof(char) * (count + 1 + neg))))
+		return (NULL);
+	res[count + neg] = '\0';
+	if (neg)
+		res[0] = '-';
+	if (n == -2147483648)
+		n = min(res);
 	if (n < 0)
 		n *= -1;
-	tab[len] = '\0';
-	while (len--)
+	if (n == 0)
+		res[0] = '0';
+	while (n)
 	{
-		tab[len] = n % 10 + '0';
+		res[count-- - 1 + neg] = n % 10 + 48;
 		n /= 10;
 	}
-	if (neg == -1)
-		tab[0] = '-';
-	return (tab);
+	return (res);
 }
