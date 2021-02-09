@@ -1,20 +1,20 @@
 
-SO ./textures/wall2.xpm
+SO ./textures/wall_2.xpm
 
 
-NO ./textures/wall1.xpm
+NO ./textures/wall_1.xpm
 
-WE ./textures/wall4.xpm
-
-
-EA ./textures/wall3.xpm
+WE ./textures/wall_4.xpm
 
 
-R 600 400
+EA ./textures/wall_3.xpm
 
-F 165,42,42
 
-S ./textures/pillar.xpm
+R 1080 720
+
+F 85,35,0
+
+S ./textures/wood.xpm
 C 135,206,235
 
 
