@@ -1,11 +1,8 @@
-# Cub3D
+# Push_swap
 Projet 42 :
 
-Ce projet est inspiré du jeu éponyme mondialement connu, considéré comme
-le premier FPS jamais développé (technique du
-ray-casting).
-
-L'objectif est de faire une vue dynamique au sein d’un labyrinthe, dans
-lequel vous devrez trouver votre chemin.
+Ecrire un programme en C nommé push_swap, qui calcule et affiche sur la
+sortie standard le plus petit programme dans le langage des instructions de Push_swap
+permettant de trier les entiers passés en paramètre.
 
 ---> Succeeded with 102%
