@@ -1,8 +1,9 @@
-# Push_swap
+#Cub3D
+
 Projet 42 :
 
-Ecrire un programme en C nommé push_swap, qui calcule et affiche sur la
-sortie standard le plus petit programme dans le langage des instructions de Push_swap
-permettant de trier les entiers passés en paramètre.
+Ce projet est inspiré du jeu éponyme mondialement connu, considéré comme le premier FPS jamais développé (technique du ray-casting).
 
----> Succeeded with %
+L'objectif est de faire une vue dynamique au sein d’un labyrinthe, dans lequel vous devrez trouver votre chemin.
+
+---> Succeeded with 102%
